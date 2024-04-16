@@ -1,5 +1,5 @@
 import pygame
-from constants import *
+from Constants import *
 
 
 class Player():

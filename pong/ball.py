@@ -1,7 +1,7 @@
 from token import NUMBER
 import pygame
 import math
-from constants import *
+from Constants import *
 
 
 class Ball():

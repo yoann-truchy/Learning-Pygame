@@ -264,7 +264,7 @@ class Pong_pygame:
 
         for debug_name, debug_drawing in self.debug_drawing_list.items():
             debug_drawing[0](*debug_drawing[1])
-            
+
 
         debug_lines = [
             f"FPS: {round(self.game_clock.get_fps())}",
