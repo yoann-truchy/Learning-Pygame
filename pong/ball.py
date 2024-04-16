@@ -4,12 +4,10 @@ import math
 from constants import *
 
 
-class Ball(pygame.sprite.Sprite):
+class Ball():
     def __init__(
         self,
         radius,
-        x,
-        y,
         x_speed,
         y_speed,
         ball_color=WHITE,
@@ -27,7 +25,6 @@ class Ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # place ball
         self.radius = radius
-        self.rect.topleft = (x, y)
         self.x_speed = x_speed
         self.y_speed = y_speed
         self.max_speed = 1.2
@@ -64,6 +61,13 @@ class Ball(pygame.sprite.Sprite):
         self.move(self.x_speed * dt, self.y_speed * dt)
 
     def calculate_collision_with_rect(self, collission_rect: pygame.Rect):
+        """Handles collision between the ball and the passed rect
+        The main rule is that the ball will change it's X and Y speed based
+        on what side of the rectangle it hits.
+        Note: this makes hitting the ball with the player side NOT go to the opponent
+              and result in the opponent scoring a point
+        Maybe the collision with borders and players should be handle by different functions
+        """
         top_point = (self.rect.centerx, self.rect.top)
         bot_point = (self.rect.centerx, self.rect.bottom)
         left_point = (self.rect.left, self.rect.centery)
@@ -136,7 +140,7 @@ class Ball(pygame.sprite.Sprite):
                 self.x_speed = abs(self.x_speed)
             else:
                 # ????
-                txt = "fuck"
+                raise NotImplementedError()
 
     def set_position(self, x, y):
         self.rect.topleft = (x, y)

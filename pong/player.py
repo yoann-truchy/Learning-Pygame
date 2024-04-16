@@ -2,23 +2,22 @@ import pygame
 from constants import *
 
 
-class Player(pygame.sprite.Sprite):
+class Player():
     def __init__(
         self,
-        x_starting_pos,
-        y_starting_pos,
         width,
         length,
+        color,
     ) -> None:
         super().__init__()
         # player rectangle
         self.image = pygame.Surface((width, length))
-        self.rect = self.image.fill(PLAYER_COLOR)
+        self.rect = self.image.fill(color)
         # place player
-        self.rect.topleft = (x_starting_pos, y_starting_pos)
         self.acceleration = 0
         self.drag = PLAYER_DRAG
         self.speed = 0
+        self.length = length
 
     def set_acceleration(self, accel):
         self.acceleration = accel
@@ -51,6 +50,12 @@ class Player(pygame.sprite.Sprite):
     def move_y(self, y_distance):
         current_x, current_y = self.rect.center
         self.rect.center = (current_x, current_y + y_distance)
+
+    def set_position(self, postion_x, position_y):
+        self.rect.topleft = (postion_x, position_y)
+
+    def set_center_position(self, postion_x, position_y):
+        self.rect.center = (postion_x, position_y)
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
