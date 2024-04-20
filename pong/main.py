@@ -8,6 +8,7 @@ from Ball import Ball
 from Constants import *
 from Game_types import Game_config, Screen_config
 from Player import Player
+from Debug import Debug_window
 
 
 class Pong_pygame:
@@ -17,7 +18,10 @@ class Pong_pygame:
         self.game_clock = pygame.time.Clock()
         pygame.init()
         self.is_running = True
+        self.debug_window = None
 
+        # variables
+        self.max_exchange = 0
 
         # usefull lists and dicts
         self.player_list: list[Player] = list()
@@ -28,9 +32,8 @@ class Pong_pygame:
 
         # create fonts
         pygame.font.init()
-        self.fonts = {}
-        self.fonts["default"] = pygame.font.SysFont("Calibri", 16)
-        self.fonts["big_debug"] = pygame.font.SysFont("Calibri", 56)
+        self.font_default = pygame.font.SysFont("Calibri", 16)
+        self.font_score = pygame.font.SysFont("Calibri", 56)
 
         # init screen
         self.screen = pygame.display.set_mode(
@@ -62,7 +65,8 @@ class Pong_pygame:
         # TODO: implement a config file
         self.config = Game_config(
             debug=True,
-            screen=Screen_config(max_refresh_rate=120)
+            screen=Screen_config(max_refresh_rate=120),
+            backgroud_color=(30, 30, 75),
         )
 
     def create_players(self):
@@ -131,6 +135,24 @@ class Pong_pygame:
             if event.type == pygame.QUIT:
                 self.is_running = False
 
+            # MOUSE
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if (
+                        self.debug_window is not None
+                        and self.debug_window.rect.collidepoint(event.pos)
+                    ):
+                        self.debug_window.drag_start(event.pos)
+
+            elif event.type == pygame.MOUSEMOTION:
+                if self.debug_window is not None and self.debug_window.is_dragged:
+                    self.debug_window.drag_at(event.pos)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    if self.debug_window is not None:
+                        self.debug_window.drag_stop()
+
         # KEY PRESSES
         keys = pygame.key.get_pressed()
 
@@ -142,7 +164,7 @@ class Pong_pygame:
             self.player_l.set_acceleration(0)
         if keys[pygame.K_ESCAPE]:
             self.is_running = False
-            
+
         self.mouse_pos = pygame.mouse.get_pos()
 
     def update(self):
@@ -207,6 +229,7 @@ class Pong_pygame:
                         * uniform(0.75, 1.25)
                         * random_sign(),
                     )
+                    self.max_exchange = max(self.max_exchange, ball.speed_increase_counter)
                     ball.speed_increase_counter = 0
                     continue
 
@@ -244,28 +267,38 @@ class Pong_pygame:
         for border in self.border_list:
             pygame.draw.rect(self.screen, WHITE, border)
         for player in self.player_list:
-            player.draw(self.screen)
+            player.draw_on(self.screen)
         for ball in self.ball_list:
-            ball.draw(self.screen)
+            ball.draw_on(self.screen)
+
+        # draw score
+        l_score_txt = self.font_score.render(str(self.score["left"]), True, WHITE)
+        r_score_txt = self.font_score.render(str(self.score["right"]), True, WHITE)
+        self.screen.blits(
+            blit_sequence=[
+                ((l_score_txt), (self.config.screen.width / 3, SCORE_Y)),
+                (r_score_txt, (2 * self.config.screen.width / 3, SCORE_Y)),
+            ]
+        )
 
         time_render_stop = pygame.time.get_ticks()
         self.render_time = time_render_stop - time_render_start
 
         if self.config.debug:
             self.render_debug()
-        
+
         pygame.display.update()
 
     def render_debug(self):
-        debug_position = (
-            self.config.screen.width - 250,
-            self.config.screen.height - 45,
-        )
+        if self.debug_window == None:
+            # debug surface which debug text will be drawn on
+            self.debug_window = Debug_window((10, 10))
 
+        # debug drawings
         for debug_name, debug_drawing in self.debug_drawing_list.items():
             debug_drawing[0](*debug_drawing[1])
 
-
+        # draw lines
         debug_lines = [
             f"FPS: {round(self.game_clock.get_fps())}",
             f"update: {self.update_time} ms",
@@ -274,17 +307,11 @@ class Pong_pygame:
             f"player speed: {self.player_l.speed:.4f}",
             f"ball X speed: {self.ball_list[0].x_speed:.4f}",
             f"ball Y speed: {self.ball_list[0].y_speed:.4f}",
+            f"ball speed counter: {self.ball_list[0].speed_increase_counter}",
+            f"max exchange: {self.max_exchange}",
         ]
 
-        for i, debug_line_txt in enumerate(debug_lines):
-            line_x_position = debug_position[0]
-            line_y_position = debug_position[1] - DEBUG_LINE_SPACING * i
-            line_position = (line_x_position, line_y_position)
-
-            text_object = self.fonts["default"].render(
-                str(debug_line_txt), False, WHITE
-            )
-            self.screen.blit(text_object, line_position)
+        self.debug_window.render_lines(debug_lines, self.screen)
 
     def run(self):
         """game loop"""

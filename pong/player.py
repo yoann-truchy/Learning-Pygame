@@ -9,7 +9,6 @@ class Player():
         length,
         color,
     ) -> None:
-        super().__init__()
         # player rectangle
         self.image = pygame.Surface((width, length))
         self.rect = self.image.fill(color)
@@ -29,6 +28,7 @@ class Player():
         self.speed = speed
 
     def update(self, dt=1):
+        """called onnce per clock tick"""
         self.speed += self.acceleration
         self.speed_sign = 1 if self.speed > 0 else -1
 
@@ -57,5 +57,5 @@ class Player():
     def set_center_position(self, postion_x, position_y):
         self.rect.center = (postion_x, position_y)
 
-    def draw(self, surface):
+    def draw_on(self, surface):
         surface.blit(self.image, self.rect)

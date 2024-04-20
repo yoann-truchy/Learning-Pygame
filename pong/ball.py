@@ -12,7 +12,6 @@ class Ball():
         y_speed,
         ball_color=WHITE,
     ) -> None:
-        super().__init__()
         # ball rectangle
         self.image = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(
@@ -21,7 +20,6 @@ class Ball():
             (radius, radius),
             radius,
         )
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         # place ball
         self.radius = radius
@@ -36,12 +34,13 @@ class Ball():
         self.rect.center = (current_x + x_distance, current_y + y_distance)
 
     def increase_speed(self):
+        """ increase the X speed based on the number of time the ball has been hit"""
         x_speed_sign = 1 if self.x_speed > 0 else -1
         # linear
         # new_speed = BALL_X_INITIAL_SPEED + number * 0.1
         # sigmoid
-        new_speed = 0.12 + (1.2 / (1 + (6 * math.exp(-0.2 * self.speed_increase_counter))))
-        self.speed_increase_counter += 2
+        new_speed = 0.12 + (1.2 / (1 + (6 * math.exp(-0.06 * self.speed_increase_counter))))
+        self.speed_increase_counter += 1
 
         self.x_speed = new_speed * x_speed_sign
 
@@ -149,5 +148,5 @@ class Ball():
         self.x_speed = x_speed
         self.y_speed = y_speed
 
-    def draw(self, surface):
+    def draw_on(self, surface):
         surface.blit(self.image, self.rect)
