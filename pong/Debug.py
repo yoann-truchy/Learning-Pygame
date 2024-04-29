@@ -76,14 +76,16 @@ class Debug_window:
             text_height_summ += txt_h
             new_max_width = max(new_max_width, txt_w)
 
-        # dinamycly change the surface size based on the text size
+        total_lines = len(debug_lines)
+        total_height = text_height_summ + (
+            (DEBUG_LINE_SPACING - text_height_summ / total_lines) * (total_lines - 1)
+        )
+
+        # dynamically change the surface size based on the text size
         if new_max_width > self.max_width:
-            # calculate total height
-            total_lines = len(debug_lines)
-            total_height = text_height_summ + (
-                (DEBUG_LINE_SPACING - text_height_summ / total_lines)
-                * (total_lines - 1)
-            )
+            self.resize_surface(20 + new_max_width, 20 + total_height)
+
+        if total_height > self.surface.get_height():
             self.resize_surface(20 + new_max_width, 20 + total_height)
 
         self.surface.blits(blit_sequence)
